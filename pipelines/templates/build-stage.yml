@@ -17,12 +17,7 @@ stages:
       vmImage: 'windows-latest'
     
     steps:
-    - template: build-steps.yml
-      parameters:
-        BuildConfiguration: $(BuildConfiguration)
-        DotNetVersion: '7.x'
 
-        
     - task: replacetokens@4
       inputs:
         targetFiles: |
@@ -39,6 +34,12 @@ stages:
         useLegacyPattern: false
         enableTelemetry: false
 
+    - template: build-steps.yml
+      parameters:
+        BuildConfiguration: $(BuildConfiguration)
+        DotNetVersion: '7.x'
+
+      
     - task: DotNetCoreCLI@2
       displayName: 'Publish blazor app to $(build.artifactstagingdirectory)'
       condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))

@@ -24,6 +24,7 @@ namespace Core.Infrastructure.BlazorApp
             builder.Services.AddMsalAuthentication(options =>
             {
                 builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+                options.ProviderOptions.LoginMode = "redirect";
             });
 
             var host = builder.Build();
