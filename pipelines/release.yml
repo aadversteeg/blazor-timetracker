@@ -1,0 +1,22 @@
+trigger:
+- none
+
+variables:
+- template: templates/global-variables.yml 
+
+resources:
+  pipelines:
+  - pipeline: 'BuildPipeline'
+    source: 'Blazor TimeTrigger - Build' # name of the pipeline in Azure DevOps
+    trigger: true
+
+  stages:
+  - template: templates/deploy-stage.yml
+    parameters:
+      stageName: Deploy
+      condition:  succeeded()
+      agentPool: '$(agentPoolBase) - tst'
+      environmentName: tst
+      aspNetCoreEnvironment: Test
+      artifactSource: 'BuildPipeline'
+      azureSubscription: $(ServiceConnectionName)

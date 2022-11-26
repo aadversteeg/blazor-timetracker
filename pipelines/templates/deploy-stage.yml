@@ -1,0 +1,69 @@
+parameters:
+  stageName: <set>
+  agentPool: <set>
+  environmentName: <set>
+  aspNetCoreEnvironment: <set>
+  azureSubscription: <set>
+  condition: succeeded()
+  dependsOn:
+  artifactSource: <set>
+  vnetResourceGroup: <set>
+  vnetName: <set>
+  runIntegrationTests: false
+  alertingActionGroupName: <set>
+  deleteBeforeDeployment: <set>
+
+stages:
+- stage: ${{ parameters.stageName }}
+  displayName: Deploy to ${{ parameters.environmentName }}
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    resourceGroupName: $(ApplicationName)-${{ parameters.environmentName }}
+    webAppName: $(ApplicationName)-${{ parameters.environmentName }}
+  jobs:
+    - deployment: ${{ parameters.stageName }}
+      displayName: 'Deploy on ${{ parameters.environmentName }}'
+      environment:
+        name: ${{ parameters.environmentName }}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+
+              - task: AzureResourceGroupDeployment@2
+                displayName: 'Deploy $(ApplicationName)-${{ parameters.environmentName }} infrastructure to Azure'
+                inputs:
+                  azureSubscription: ${{ parameters.azureSubscription }}
+                  resourceGroupName: $(resourceGroupName)
+                  location:  'West Europe'
+                  deploymentOutputs: DeploymentOutputs
+                  csmFile: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/$(Infrastructure.ArtifactName)/main.json'
+                  csmParametersFile: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/$(Infrastructure.ArtifactName)/main.parameters.json'
+                  overrideParameters: 
+                    -environment "${{ parameters.environmentName }}"
+                    -appName "$(ApplicationName)"
+                    -appShortName "$(ApplicationNameShort)"
+                    
+              - task: keesschollaart.arm-outputs.arm-outputs.ARM Outputs@5
+                displayName: 'Retrieve ARM Output'
+                inputs:
+                  ConnectedServiceNameARM: ${{ parameters.azureSubscription }}
+                  resourceGroupName: $(resourceGroupName)
+
+              - task: AzureCLI@2
+                displayName: 'Acquire API key for deployment'
+                inputs:
+                  azureSubscription: ${{ parameters.azureSubscription }}
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  inlineScript: |
+                    APIKEY=$(az staticwebapp secrets list --name $(resourceGroupName) | jq -r '.properties.apiKey')
+                    echo "##vso[task.setvariable variable=apiKey;issecret=true]$APIKEY"
+
+              - task: AzureStaticWebApp@0
+                inputs:
+                  app_location: '$(Pipeline.Workspace)/${{ parameters.artifactSource }}/$(ArtifactName)/Core.WebApi.zip'
+                  output_location: 'wwwroot'
+                  azure_static_web_apps_api_token: $(apiKey)

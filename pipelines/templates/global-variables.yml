@@ -1,0 +1,3 @@
+variables:
+  ArtifactName: application
+  Infrastructure.ArtifactName: infrastructure

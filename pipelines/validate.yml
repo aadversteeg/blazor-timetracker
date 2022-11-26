@@ -1,5 +1,8 @@
 trigger:
   none
+  
+variables:
+- template: templates/global-variables.yml 
 
 pool:
   vmImage: windows-latest
