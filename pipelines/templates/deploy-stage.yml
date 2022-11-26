@@ -1,17 +1,10 @@
 parameters:
   stageName: <set>
-  agentPool: <set>
   environmentName: <set>
-  aspNetCoreEnvironment: <set>
   azureSubscription: <set>
   condition: succeeded()
-  dependsOn:
   artifactSource: <set>
-  vnetResourceGroup: <set>
-  vnetName: <set>
-  runIntegrationTests: false
-  alertingActionGroupName: <set>
-  deleteBeforeDeployment: <set>
+
 
 stages:
 - stage: ${{ parameters.stageName }}

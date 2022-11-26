@@ -15,8 +15,6 @@ resources:
     parameters:
       stageName: Deploy
       condition:  succeeded()
-      agentPool: '$(agentPoolBase) - tst'
       environmentName: tst
-      aspNetCoreEnvironment: Test
       artifactSource: 'BuildPipeline'
       azureSubscription: $(ServiceConnectionName)
