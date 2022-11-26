@@ -25,7 +25,9 @@ stages:
         
     - task: replacetokens@4
       inputs:
-        targetFiles: '**/Core.Infrastructure.BlazorApp/**/service-worker.published.js'
+        targetFiles: |
+          '**/Core.Infrastructure.BlazorApp/**/service-worker.published.js'
+          '**/Core.Infrastructure.BlazorApp/**/*.razor'
         encoding: 'auto'
         tokenPattern: 'default'
         writeBOM: true
