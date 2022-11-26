@@ -10,11 +10,11 @@ resources:
     source: 'Blazor TimeTrigger - Build' # name of the pipeline in Azure DevOps
     trigger: true
 
-  stages:
-  - template: templates/deploy-stage.yml
-    parameters:
-      stageName: Deploy
-      condition:  succeeded()
-      environmentName: tst
-      artifactSource: 'BuildPipeline'
-      azureSubscription: $(ServiceConnectionName)
+stages:
+- template: templates/deploy-stage.yml
+  parameters:
+    stageName: Deploy
+    condition:  succeeded()
+    environmentName: tst
+    artifactSource: 'BuildPipeline'
+    azureSubscription: $(ServiceConnectionName)
