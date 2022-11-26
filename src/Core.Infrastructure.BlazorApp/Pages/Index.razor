@@ -12,7 +12,7 @@
 <button class="btn btn-outline-secondary" @onclick="ToNextDay">Next Day</button>
 <button class="btn btn-outline-secondary" @onclick="GoToToday" disabled="@(today == date)">Today</button>
 <input type="date" @bind-value="dateSelector" />
-<button class="btn btn-outline-secondary" @onclick="GoToDate">Go</button>
+<button class="btn btn-outline-secondary" @onclick="GoToDate" disabled="@(dateSelector == date)">Go</button>
 
 
 @code {
