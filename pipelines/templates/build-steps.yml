@@ -32,7 +32,7 @@ steps:
 
 - script: |
     dotnet tool install dotnet-reportgenerator-globaltool --tool-path . --ignore-failed-sources
-    .\reportgenerator.exe "-reports:$(Build.SourcesDirectory)/**/coverage.opencover.xml" "-targetdir:coverage/Cobertura" "-reporttypes:Cobertura;HTMLInline;HTMLChart"
+    .\reportgenerator.exe "-reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml" "-targetdir:coverage/Cobertura" "-reporttypes:Cobertura;HTMLInline;HTMLChart"
   condition: and(succeeded(), eq('${{ parameters.RunReportGenerator }}', true))
   displayName: Run Reportgenerator
   continueOnError: true
