@@ -1,0 +1,80 @@
+parameters:
+  validateOnly: false
+
+stages:
+- stage: Build
+  variables:
+    buildConfiguration: Release
+    dotnet.skip.first.time.experience: 'true'
+    Environment: tst
+    ResourceGroupName: $(ApplicationName)-$(Environment)
+
+
+  jobs:
+  - job: BuildSolution
+    displayName: Build solution
+    pool: Hosted Windows 2019 with VS2019
+    
+    steps:
+    - template: build-steps.yml
+      parameters:
+        BuildConfiguration: $(BuildConfiguration)
+        DotNetVersion: '7.x'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish webapi to $(build.artifactstagingdirectory)'
+      condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))
+      inputs:
+        command: 'publish' 
+        publishWebProjects: false
+        projects: '**/Core.Infrastructure.BlazorApp/Core.Infrastructure.BlazorApp.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) --no-build'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish artifact
+      condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifactName: $(ArtifactName)
+
+  - job: BuildBicep
+    displayName: Build main.bicep 
+    pool:
+     vmImage: 'ubuntu-latest'
+      
+    steps:
+      - task: AzureCLI@2
+        displayName: Build ARM Template from bicep file
+        inputs:
+          azureSubscription: $(AzureSubscription.ServiceConnection.Dta)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: az bicep build --file pipelines/bicep/main.bicep
+          
+      - task: AzureResourceGroupDeployment@2
+        displayName: 'Validate ARM Templates'
+        inputs:
+          azureSubscription: $(AzureSubscription.ServiceConnection.Dta)
+          resourceGroupName: $(ResourceGroupName)
+          location: 'West Europe'
+          csmFile: pipelines/bicep/main.json
+          csmParametersFile: pipelines/bicep/main.parameters.json
+          deploymentMode: Validation
+          
+      - task: CopyFiles@2
+        displayName: 'Copy infrastructure to: $(Build.ArtifactStagingDirectory)/infra'
+        condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))
+        inputs:
+          SourceFolder: pipelines
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+          flattenFolders: true
+          Contents: |
+            **/main*.json
+            **/*.ps1
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish artifact
+        condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifactName: $(Infrastructure.ArtifactName)

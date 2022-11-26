@@ -1,0 +1,61 @@
+﻿@page "/projects/index"
+@inject Core.Application.IProjectRepository repository
+@inject NavigationManager navigationManager
+@inject BlazorApp.Client.ProgramServices  services
+
+<PageTitle>Projects</PageTitle>
+
+<h1>Projects</h1>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Active</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td><a href="projects/update/@forecast.Name">@forecast.Name</a></td>
+                    <td>@forecast.Active</td>
+                    <td><button class="btn btn-sm btn-danger" @onclick="() => DeleteProject(forecast.Name)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<button class="btn btn-primary" @onclick="NewProject">New Project</button>
+
+@code {
+    private IReadOnlyCollection<Core.Application.Models.Project>? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await repository.GetAll();
+    }
+
+    private void NewProject()
+    {
+        navigationManager.NavigateTo("/projects/insert");
+    }
+
+    async Task DeleteProject(string name)
+    {
+        bool confirmed = await services.Confirm( $"Deleting {name}. Are you sure?");
+        if (confirmed)
+        {
+            await repository.Delete(name);
+            forecasts = await repository.GetAll();
+        }
+    }
+}

@@ -1,0 +1,10 @@
+trigger:
+  none
+
+pool:
+  vmImage: windows-latest
+
+stages:
+- template: build-stage.yml
+  parameters:
+    validateOnly: true

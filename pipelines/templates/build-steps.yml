@@ -1,0 +1,51 @@
+parameters:
+  BuildConfiguration: 'Release'
+  TestProjects: '**/Tests.*.csproj'
+  RunReportGenerator: true
+  DotNetVersion: '7.x'
+  ExcludeByAttribute: ''
+
+steps:
+- task: UseDotNet@2
+  displayName: 'install dotnet core'
+  inputs:
+    version: '${{ parameters.DotNetVersion }}'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
+    vstsFeed: '/fffd1cec-d3e7-45f5-b96e-eaa38b5829b1'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: '**/*.sln'
+    arguments: '--no-restore -c ${{ parameters.BuildConfiguration }}'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  inputs:
+    command: test
+    projects: '${{ parameters.TestProjects }}'
+    arguments: '--configuration ${{ parameters.BuildConfiguration }} --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=${{ parameters.ExcludeByAttribute }}'
+
+- script: |
+    dotnet tool install dotnet-reportgenerator-globaltool --tool-path . --ignore-failed-sources
+    .\reportgenerator.exe "-reports:$(Build.SourcesDirectory)/**/coverage.opencover.xml" "-targetdir:coverage/Cobertura" "-reporttypes:Cobertura;HTMLInline;HTMLChart"
+  condition: and(succeeded(), eq('${{ parameters.RunReportGenerator }}', true))
+  displayName: Run Reportgenerator
+  continueOnError: true
+
+- task: PublishTestResults@2
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+    
+- task: PublishCodeCoverageResults@1
+  continueOnError: true
+  inputs:
+    summaryFileLocation: $(Build.SourcesDirectory)/**/Cobertura/Cobertura.xml
+    reportDirectory: $(Build.SourcesDirectory)/**/Cobertura
+    codecoverageTool: cobertura

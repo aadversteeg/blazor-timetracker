@@ -1,0 +1,130 @@
+﻿@page "/projects/update/{Name}"
+@page "/projects/insert"
+@inject Core.Application.IProjectRepository repository
+@inject NavigationManager navigationManager
+@inject BlazorApp.Client.Navigation navigation
+@inject BlazorApp.Client.ProgramServices services
+
+<PageTitle>Project Details</PageTitle>
+
+
+@if (Name == null)
+{
+    <h1>Project - Create</h1>
+}
+else
+{
+    <h1>Project - Update</h1>
+}
+
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
+
+    <DataAnnotationsValidator />
+
+	<div class="mb-3">
+		<label for="name" class="form-label">Name</label>
+		<InputText type="text" class="form-control" id="name" aria-describedby="nameHelp" @bind-Value="project.Name" />
+		<div id="nameHelp" class="form-text">Short name of the project. Must be unique.</div>
+        <ValidationMessage For="@(() => project.Name)" />
+	</div>
+	<div class="mb-3">
+		<label for="description" class="form-label">Description</label>
+		<InputText type="text" class="form-control" id="description" @bind-Value="project.Description" />
+        <div id="nameHelp" class="form-text">Description of the project.</div>
+	</div>
+	<div class="mb-3 form-check">
+        <InputCheckbox type="text" class="form-check-input" id="active" @bind-Value="project.Active" />
+        <label class="form-check-label" for="active">Active</label>
+	</div>
+
+    <button type="submit" class="btn btn-primary" disabled="@(!editContext.Validate() || !editContext.IsModified())">Submit</button>
+    <div class="btn btn-secondary" @onclick="OnGoBack">Go back</div>
+
+</EditForm>
+
+
+
+@code {
+
+    [Parameter]
+    public string? Name { get; set; }
+
+
+    Core.Application.Models.Project project = new()
+        {
+            Name = "",
+            Description = "",
+            Active = true
+        };
+
+    protected EditContext editContext;
+    ValidationMessageStore messages;
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Name != null)
+        {
+            var mayBeProject = await repository.GetByName(Name);
+
+            if (mayBeProject != null)
+            {
+                project = mayBeProject;
+            }
+        }
+        editContext = new EditContext(project);
+        editContext.OnFieldChanged += EditContext_OnFieldChanged;
+        messages = new ValidationMessageStore(editContext);
+    }
+
+    async void OnGoBack()
+    {
+        if (editContext.IsModified())
+        {
+            var confirm = await services.Confirm("Project is changed, discard?");
+            if(!confirm)
+            {
+                return;
+            }
+        }
+        navigation.NavigateBack();
+    }
+
+    async void OnValidSubmit(EditContext editContext)
+    {
+        if (Name == null)
+        {
+            await repository.Insert((Core.Application.Models.Project)editContext.Model);
+        }
+        else
+        {
+            await repository.Update(Name, (Core.Application.Models.Project)editContext.Model); 
+        }
+        navigation.NavigateBack();
+    }
+
+    private async void EditContext_OnFieldChanged(object sender,
+                                     FieldChangedEventArgs e)
+    {
+
+        if (e.FieldIdentifier.FieldName == "Name")
+        {
+            var propertyValue = project.Name;
+
+            messages.Clear(e.FieldIdentifier);
+            if(project.Name != Name)
+            {
+                var projectInRepos = await repository.GetByName(project.Name);
+                if (projectInRepos != null)
+                {
+                    
+                    messages.Add(e.FieldIdentifier, "Project name is already in use.");
+                }
+                
+            } 
+            editContext.NotifyValidationStateChanged();
+		}
+	}
+}

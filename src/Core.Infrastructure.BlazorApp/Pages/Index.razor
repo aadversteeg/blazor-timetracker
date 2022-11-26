@@ -1,0 +1,76 @@
+﻿@page "/"
+@page "/{dateAsString}"
+@page "/overview/{dateAsString}"
+
+@inject NavigationManager navigationManager
+
+<PageTitle>home</PageTitle>
+
+<h1>@date.ToLongDateString()</h1>
+
+<button class="btn btn-outline-secondary" @onclick="ToPreviousDay">Previous Day</button>
+<button class="btn btn-outline-secondary" @onclick="ToNextDay">Next Day</button>
+<button class="btn btn-outline-secondary" @onclick="GoToToday" disabled="@(today == date)">Today</button>
+<input type="date" @bind-value="dateSelector" />
+<button class="btn btn-outline-secondary" @onclick="GoToDate">Go</button>
+
+
+@code {
+
+	[Parameter]
+	public string? dateAsString { get; set; }
+
+	private DateTime date;
+	private DateTime dateSelector;
+	private DateTime today;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Task.Yield();
+
+	}
+
+	protected override void OnParametersSet()
+	{
+		today = DateTime.Today;
+		if (dateAsString == null)
+		{
+			date = today;
+		}
+		else
+		{
+			date = DateTime.ParseExact(dateAsString, "yyyy-MM-dd", null);
+		}
+
+		dateSelector = date;
+	}
+
+	void ToPreviousDay()
+	{
+		var newDate = date.AddDays(-1);
+		NavigateToDate(newDate);
+	}
+
+	void ToNextDay()
+	{
+		var newDate = date.AddDays(+1);
+		NavigateToDate(newDate);
+	}
+
+	void GoToToday()
+	{
+		
+		NavigateToDate(today);
+	}
+
+	void GoToDate()
+	{
+		var newDate = dateSelector;
+		NavigateToDate(newDate);
+	}
+
+	void NavigateToDate(DateTime date)
+	{
+		navigationManager.NavigateTo($"overview/{date:yyyy-MM-dd}");
+	}
+}
