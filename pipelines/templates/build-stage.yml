@@ -13,7 +13,8 @@ stages:
   jobs:
   - job: BuildSolution
     displayName: Build solution
-    pool: Hosted Windows 2019 with VS2019
+    pool: 
+      vmImage: 'windows-latest'
     
     steps:
     - template: build-steps.yml
