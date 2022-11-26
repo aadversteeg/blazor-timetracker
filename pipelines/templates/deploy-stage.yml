@@ -39,7 +39,7 @@ stages:
                     -appName "$(ApplicationName)"
                     -appShortName "$(ApplicationNameShort)"
                     
-              - task: keesschollaart.arm-outputs.arm-outputs.ARM Outputs@5
+              - task: keesschollaart.arm-outputs.arm-outputs.ARM Outputs@6
                 displayName: 'Retrieve ARM Output'
                 inputs:
                   ConnectedServiceNameARM: ${{ parameters.azureSubscription }}
