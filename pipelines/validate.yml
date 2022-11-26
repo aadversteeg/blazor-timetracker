@@ -5,6 +5,6 @@ pool:
   vmImage: windows-latest
 
 stages:
-- template: build-stage.yml
+- template: templates/build-stage.yml
   parameters:
     validateOnly: true
