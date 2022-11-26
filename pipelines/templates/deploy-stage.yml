@@ -23,7 +23,7 @@ stages:
         runOnce:
           deploy:
             steps:
-              - checkout: self
+              - checkout: none
 
               - task: AzureResourceGroupDeployment@2
                 displayName: 'Deploy $(ApplicationName)-${{ parameters.environmentName }} infrastructure to Azure'

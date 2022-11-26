@@ -7,7 +7,7 @@ param appShortName string
 @maxLength(3)
 param environment string = 'tst'
 
-param customTags object = {Team: 'PartnerAPI'}
+param customTags object = {}
 
 param location string = 'westeurope'
 
