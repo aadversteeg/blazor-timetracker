@@ -46,7 +46,7 @@ stages:
       - task: AzureCLI@2
         displayName: Build ARM Template from bicep file
         inputs:
-          azureSubscription: $(AzureSubscription.ServiceConnection.Dta)
+          azureSubscription: $(ServiceConnectionName)
           scriptType: bash
           scriptLocation: inlineScript
           inlineScript: az bicep build --file pipelines/bicep/main.bicep
@@ -54,7 +54,7 @@ stages:
       - task: AzureResourceGroupDeployment@2
         displayName: 'Validate ARM Templates'
         inputs:
-          azureSubscription: $(AzureSubscription.ServiceConnection.Dta)
+          azureSubscription: $(ServiceConnectionName)
           resourceGroupName: $(ResourceGroupName)
           location: 'West Europe'
           csmFile: pipelines/bicep/main.json
