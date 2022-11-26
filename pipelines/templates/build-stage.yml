@@ -22,8 +22,23 @@ stages:
         BuildConfiguration: $(BuildConfiguration)
         DotNetVersion: '7.x'
 
+        
+    - task: replacetokens@4
+      inputs:
+        targetFiles: '**/Core.Infrastructure.BlazorApp/**/service-worker.published.js'
+        encoding: 'auto'
+        tokenPattern: 'default'
+        writeBOM: true
+        actionOnMissing: 'warn'
+        keepToken: false
+        actionOnNoFiles: 'continue'
+        enableTransforms: false
+        enableRecursion: false
+        useLegacyPattern: false
+        enableTelemetry: false
+
     - task: DotNetCoreCLI@2
-      displayName: 'Publish webapi to $(build.artifactstagingdirectory)'
+      displayName: 'Publish blazor app to $(build.artifactstagingdirectory)'
       condition: and(succeeded(), eq(${{ parameters.validateOnly }}, false))
       inputs:
         command: 'publish' 
