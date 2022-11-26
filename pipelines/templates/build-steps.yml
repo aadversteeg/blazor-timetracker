@@ -28,7 +28,14 @@ steps:
   inputs:
     command: test
     projects: '${{ parameters.TestProjects }}'
-    arguments: '--configuration ${{ parameters.BuildConfiguration }} --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=${{ parameters.ExcludeByAttribute }}'
+    arguments: '--configuration ${{ parameters.BuildConfiguration }} --no-build --collect:"XPlat Code Coverage" /p:CoverletOutputFormat=opencover /p:ExcludeByAttribute=${{ parameters.ExcludeByAttribute }}'
+
+- script: |
+    dotnet tool install dotnet-reportgenerator-globaltool --tool-path . --ignore-failed-sources
+    .\reportgenerator.exe "-reports:$(Build.SourcesDirectory)/**/coverage.opencover.xml" "-targetdir:coverage/Cobertura" "-reporttypes:Cobertura;HTMLInline;HTMLChart"
+  condition: and(succeeded(), eq('${{ parameters.RunReportGenerator }}', true))
+  displayName: Run Reportgenerator
+  continueOnError: true
 
 - task: PublishTestResults@2
   inputs:

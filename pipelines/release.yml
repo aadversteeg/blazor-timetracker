@@ -7,7 +7,7 @@ variables:
 resources:
   pipelines:
   - pipeline: 'BuildPipeline'
-    source: 'Blazor TimeTrigger - Build' # name of the pipeline in Azure DevOps
+    source: 'Blazor TimeTracker - Build' # name of the pipeline in Azure DevOps
     trigger: true
 
 stages:
