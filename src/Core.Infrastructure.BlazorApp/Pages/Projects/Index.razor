@@ -2,14 +2,18 @@
 @inject Core.Application.IProjectRepository repository
 @inject NavigationManager navigationManager
 @inject BlazorApp.Client.ProgramServices  services
+@using Core.Extensions
 
 <PageTitle>Projects</PageTitle>
 
 <h1>Projects</h1>
+<input type="text" @bind="filter" />
+<button class="btn btn-outline-secondary btn-sm" @onclick="UpdateProjects">Refresh</button>
 
 @if (forecasts == null)
 {
     <p><em>Loading...</em></p>
+
 }
 else
 {
@@ -38,10 +42,11 @@ else
 
 @code {
     private IReadOnlyCollection<Core.Application.Models.Project>? forecasts;
+    private string? filter { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        forecasts = await repository.GetAll();
+        return UpdateProjects();
     }
 
     private void NewProject()
@@ -58,4 +63,23 @@ else
             forecasts = await repository.GetAll();
         }
     }
+
+    private async Task UpdateProjects()
+    {
+        if(filter != null)
+        {
+             forecasts = (await repository.GetAll())
+                .Where(p => p.Name.ContainsCaseInsensitive(filter) || p.Description.ContainsCaseInsensitive(filter))
+                .ToList();
+        }
+        else
+        {
+            forecasts = await repository.GetAll();
+        }
+        
+    }
+
+
+
+
 }
