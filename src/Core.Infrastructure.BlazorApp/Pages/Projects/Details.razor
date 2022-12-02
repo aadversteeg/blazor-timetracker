@@ -37,6 +37,16 @@ else
         <label class="form-check-label" for="active">Active</label>
 	</div>
 
+	<div class="mb-3">
+		<label for="tasks" class="form-label">Tasks</label>
+		<div class="input-group">
+			<input type="text" class="form-control" placeholder="Name" aria-label="Username">
+			<input type="text" class="form-control" placeholder="Description" aria-label="Server">
+            <button class="btn btn-outline-secondary" type="button">Add</button>
+		</div>
+
+	</div>
+
     <button type="submit" class="btn btn-primary" disabled="@(!editContext.Validate() || !editContext.IsModified())">Submit</button>
     <div class="btn btn-secondary" @onclick="OnGoBack">Go back</div>
 

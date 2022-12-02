@@ -11,5 +11,7 @@ namespace Core.Application.Models
         public string? Description { get; set; } 
 
         public bool Active { get; set; }
+
+        public IReadOnlyCollection<ProjectTask> Tasks { get; set; }
     }
 }

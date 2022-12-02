@@ -1,4 +1,6 @@
-﻿namespace Core.Application.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core.Application.Models
 {
 	public class ProjectTask
 	{
@@ -10,6 +12,12 @@
 		   this.Name = name;
 		}
 
+
+		[Required]
+		[MinLength(2)]
 		public string Name { get; }
+
+		public string? Description { get; set; }
+
 	}
 }

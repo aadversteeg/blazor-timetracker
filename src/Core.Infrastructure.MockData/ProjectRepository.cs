@@ -1,31 +1,42 @@
 ﻿using Core.Application;
 using Core.Application.Models;
-using System.Xml.Linq;
 
 namespace Core.Infrastructure.MockData
 {
     public class ProjectRepository : IProjectRepository
     {
-        private List<Project> _projects = new List<Project>()
+        private List<Models.Project> _projects = new List<Models.Project>()
             {
-                new Project
+                new Models.Project("Test01")
                 {
-                    Name= "Test01",
                     Description= "Test project",
-                    Active= true
+                    Active= true,
+                    Tasks =  new List<Models.ProjectTask>()
+                    {
+                        new Models.ProjectTask("C") { Description = "Coding"},
+                        new Models.ProjectTask("T") { Description = "Testing"},
+                        new Models.ProjectTask("C") { Description = "Documenting"},
+                        new Models.ProjectTask("B") { Description = "Bug fixing"},
+                    }
                 },
-                new Project
+                new Models.Project("Test02")
                 {
                     Name= "Test02",
                     Description= "Another test project",
-                    Active= true
+                    Active= true,
+                    Tasks =  new List<Models.ProjectTask>()
+                    {
+                        new Models.ProjectTask("C") { Description = "Coding"},
+                        new Models.ProjectTask("T") { Description = "Testing"},                        
+                        new Models.ProjectTask("C") { Description = "Documenting"},
+                        new Models.ProjectTask("B") { Description = "Bug fixing"},
+                    }
                 }
             };
 
         public Task<IReadOnlyCollection<Project>> GetAll()
         {
-
-            return Task.FromResult(_projects as IReadOnlyCollection<Project>)  ;
+            return Task.FromResult(_projects.Select(p => p.ToApplication()).ToList() as IReadOnlyCollection<Project>)  ;
         }
 
         public Task<Project?> GetByName(string name)
@@ -34,12 +45,7 @@ namespace Core.Infrastructure.MockData
 
             var projectInRepository = _projects.FirstOrDefault(p => p.Name == name);
             if (projectInRepository != null) {
-                project = new Project
-                {
-                    Name = projectInRepository.Name,
-                    Description = projectInRepository.Description,
-                    Active = projectInRepository.Active
-                };
+                project = projectInRepository.ToApplication();
             }
 
             return Task.FromResult(project);
@@ -60,15 +66,13 @@ namespace Core.Infrastructure.MockData
 
         public Task Insert(Project project)
         {
-            var projectInRepository = new Project()
+            var projectInRepository = new Models.Project(project.Name)
             {
-                Name = project.Name,
                 Description = project.Description,
-                Active = project.Active
+                Active = project.Active,
             };
 
             _projects.Add(projectInRepository);
-
             return Task.CompletedTask;
         }
 

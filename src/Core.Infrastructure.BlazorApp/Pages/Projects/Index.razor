@@ -9,6 +9,7 @@
 <h1>Projects</h1>
 <input type="text" @bind="filter" />
 <button class="btn btn-outline-secondary btn-sm" @onclick="UpdateProjects">Refresh</button>
+<button class="btn btn-outline-secondary btn-sm" @onclick="ClearFilter">Clear</button>
 
 @if (forecasts == null)
 {
@@ -68,18 +69,19 @@ else
     {
         if(filter != null)
         {
-             forecasts = (await repository.GetAll())
-                .Where(p => p.Name.ContainsCaseInsensitive(filter) || p.Description.ContainsCaseInsensitive(filter))
-                .ToList();
+            forecasts = (await repository.GetAll())
+               .Where(p => p.Name.ContainsCaseInsensitive(filter) || p.Description.ContainsCaseInsensitive(filter))
+               .ToList();
         }
         else
         {
             forecasts = await repository.GetAll();
         }
-        
     }
 
-
-
-
+    private Task ClearFilter()
+    {
+        filter = null;
+        return UpdateProjects();
+    }
 }
